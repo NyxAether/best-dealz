@@ -10,8 +10,8 @@
             "type": "python",
             "cwd": "${workspaceFolder}",
             "request": "launch",
-            "program": "${workspaceFolder}\\.venv\\Scripts\\cli",
-            "args": [""],
+            "program": "${workspaceFolder}\\.venv\\Scripts\\dealz",
+            "args": ["alert-below","iphone","1000"],
             "console": "integratedTerminal"
         }
         ,

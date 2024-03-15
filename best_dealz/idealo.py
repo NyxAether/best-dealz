@@ -2,20 +2,30 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class Article(BaseModel):
     title: str
     price: float = Field(ge=0.0)
+    url: HttpUrl
+
+    def __gt__(self, other: "Article") -> bool:
+        return self.price > other.price
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Article):
+            return NotImplemented
+        return self.price == other.price
 
 
 class Idealo:
     def __init__(self) -> None:
-        self.adress = "https://www.idealo.fr/prechcat.html"
+        self.adress = "https://www.idealo.fr"
+        self.search_adress = self.adress + "/prechcat.html"
 
     def get_products(self, search_terms: str) -> list[Article]:
-        uri = self.adress + "?q=" + search_terms
+        uri = self.search_adress + "?q=" + search_terms
         session = requests.Session()
         session.headers.update(
             {
@@ -31,7 +41,7 @@ class Idealo:
                 "Accept-Encoding": "gzip, deflate, br",
             }
         )
-        price_pattern = re.compile(r"([\d,]+)")
+        price_pattern = re.compile(r"(\d[\d\s,]*\d)")
         r = session.get(uri, timeout=10)
         soup = BeautifulSoup(r.text, "html.parser")
         articles_html = soup.find_all("div", class_="offerList-item")
@@ -40,17 +50,18 @@ class Idealo:
             title = article.find(
                 "div", class_="offerList-item-description-title"
             ).text.strip()
+            url = self.adress + article.find("a")["href"]
             price_text = price_pattern.search(
                 article.find("div", class_="offerList-item-priceMin").text
             )
             if price_text:
-                price = float(price_text.group(0).replace(",", "."))
+                price = float(re.sub(r"\s", "", price_text.group(0).replace(",", ".")))
             else:
                 raise ValueError("No price found")
-            articles.append(Article(title=title, price=price))
+            articles.append(Article(title=title, url=url, price=price))
 
         return articles
 
-    def get_minimal_price(self, search_terms: str) -> float:
+    def get_min_price_article(self, search_terms: str) -> Article:
         articles = self.get_products(search_terms)
-        return min([article.price for article in articles])
+        return min([article for article in articles])

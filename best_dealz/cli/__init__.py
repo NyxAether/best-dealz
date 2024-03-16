@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 
 from best_dealz.idealo import Idealo
+from best_dealz.notifications import Notifications
 from best_dealz.paths import Paths
 from best_dealz.smtp2go import SMTP2GO, Email
 
@@ -26,22 +27,14 @@ def min_price(search_terms: str) -> None:
 @click.command(help="Alert if article is below threshold")
 @click.argument("search_terms")
 @click.argument("threshold", type=float)
-def alert_below(search_terms: str, threshold: float | int) -> None:
-    dealz = Idealo()
-    paths = Paths(Path.cwd())
-    emailer = SMTP2GO(paths.config)
-    best_article = dealz.get_min_price_article(search_terms)
-    if best_article.price < threshold:
-        click.echo(
-            f"Article {best_article.title} is below {threshold} €.\n"
-            f"Current price is {best_article.price} € :\n"
-            f"{best_article.url}"
-        )
-        new_email = Email(
-            subject=f"Article {best_article.title} is below {threshold} €",
-            text_body=f"Current price is {best_article.price} € :\n{best_article.url}",
-        )
-        emailer.send_email(new_email)
+@click.option(
+    "--timer", default=60, help="Timer in seconds to check prices. Defaults to 60"
+)
+@click.option(
+    "--timer-after-email", default=1800, help="Timer in seconds to wait after sending an email. Defaults to 1800"
+)
+def alert_below(search_terms: str, threshold: float | int, timer: int = 60, timer_after_email: int = 1800) -> None:
+    Notifications(search_terms, threshold).loop(timer, timer_after_email)
 
 
 if __name__ == "__main__":

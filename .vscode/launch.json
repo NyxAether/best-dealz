@@ -4,18 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
             "name": "Python: Test CLI",
             "type": "python",
             "cwd": "${workspaceFolder}",
             "request": "launch",
             "program": "${workspaceFolder}\\.venv\\Scripts\\dealz",
-            "args": ["alert-below","iphone","1000"],
+            "args": [
+                "alert-below",
+                "iphone",
+                "1000"
+            ],
             "console": "integratedTerminal"
-        }
-        ,
-        
+        },
         {
             "name": "Python: Current File",
             "type": "python",
@@ -23,7 +24,24 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "env": {"PYTHONPATH": "${workspaceFolder}"}
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Docker: Python - General",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "python": {
+                "pathMappings": [
+                    {
+                        "localRoot": "${workspaceFolder}",
+                        "remoteRoot": "/app"
+                    }
+                ],
+                "projectType": "general"
+            }
         }
     ]
 }

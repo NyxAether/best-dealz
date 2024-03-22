@@ -1,6 +1,6 @@
+import pytest
 from pydantic_core import Url
 from pytest import MonkeyPatch, fixture
-import pytest
 
 from best_dealz.idealo import Article, Idealo, NoArticleFound
 
@@ -43,6 +43,7 @@ def test_get_min_price_article(idealo: Idealo, monkeypatch: MonkeyPatch) -> None
     with pytest.raises(NoArticleFound):
         idealo.get_min_price_article()
 
+
 def test_get_mean_price_article(idealo: Idealo, monkeypatch: MonkeyPatch) -> None:
     def patch_get_products(self: Idealo) -> list[Article]:
         return [
@@ -68,6 +69,7 @@ def test_get_mean_price_article(idealo: Idealo, monkeypatch: MonkeyPatch) -> Non
     monkeypatch.setattr(Idealo, "get_products", lambda self: [])
     with pytest.raises(NoArticleFound):
         idealo.get_mean_price_article()
+
 
 def test_search_uri(idealo: Idealo) -> None:
     assert idealo.search_uri == "https://www.idealo.fr/prechcat.html?q=iphone"

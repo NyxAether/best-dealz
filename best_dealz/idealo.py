@@ -15,13 +15,10 @@ class Article(BaseModel):
     price: float = Field(ge=0.0)
     url: HttpUrl
 
-    def __gt__(self, other: "Article") -> bool:
-        return self.price > other.price
-
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Article):
             return NotImplemented
-        return self.price == other.price
+        return self.url == other.url
 
     def __float__(self) -> float:
         return self.price
@@ -85,10 +82,14 @@ class Idealo:
         articles = self.get_products()
         if len(articles) == 0:
             raise NoArticleFound(f"No article found for {self.search_terms}")
-        return min([article for article in articles])
+        return min(articles, key=lambda article: article.price)
 
     def get_mean_price_article(self) -> float:
         articles = self.get_products()
         if len(articles) == 0:
             raise NoArticleFound(f"No article found for {self.search_terms}")
         return mean([article.price for article in articles])
+
+    def reset(self) -> None:
+        """Reset articles to None, so the next call to get_products will fetch data"""
+        self._articles = None

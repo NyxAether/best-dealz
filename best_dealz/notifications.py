@@ -26,6 +26,7 @@ class Notifications:
                                 after sending an email. Defaults to 1800.
         """
         while True:
+            self.dealz.reset()
             time.sleep(timer)
             click.echo(f"Checking prices for {self.search_terms}...")
             best_article = self.dealz.get_min_price_article()

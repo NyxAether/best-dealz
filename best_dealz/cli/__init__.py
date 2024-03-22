@@ -1,3 +1,5 @@
+
+
 import click
 
 from best_dealz.idealo import Idealo, NoArticleFound
@@ -45,9 +47,9 @@ def alert_below(
 ) -> None:
     Notifications(search_terms, threshold).loop(timer, timer_after_email)
 
+main.add_command(min_price)
+main.add_command(alert_below)
 
 if __name__ == "__main__":
     main()
 
-main.add_command(min_price)
-main.add_command(alert_below)

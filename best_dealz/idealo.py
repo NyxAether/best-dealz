@@ -57,17 +57,17 @@ class Idealo:
         price_pattern = re.compile(r"(\d[\d\s,]*\d)")
         r = session.get(uri, timeout=10)
         soup = BeautifulSoup(r.text, "html.parser")
-        articles_html = soup.find_all("div", class_="offerList-item")
+        articles_html = soup.find_all("div", class_=r"sr-resultList__item")
         articles: list[Article] = []
         terms_list = self.search_terms.split()
         for article in articles_html:
-            title = article.find(
-                "div", class_="offerList-item-description-title"
-            ).text.strip()
+            title = article.find("div", class_=r"sr-productSummary__title").text.strip()
             title_lower = title.lower()
+            if article.find("a") is None:
+                continue
             url = self.adress + article.find("a")["href"]
             price_text = price_pattern.search(
-                article.find("div", class_="offerList-item-priceMin").text
+                article.find("div", class_="sr-detailedPriceInfo__price").text
             )
             if price_text:
                 price = float(re.sub(r"\s", "", price_text.group(0).replace(",", ".")))

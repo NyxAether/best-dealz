@@ -1,8 +1,13 @@
 import re
+from statistics import mean
 
 import requests
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field, HttpUrl
+
+
+class NoArticleFound(Exception):
+    pass
 
 
 class Article(BaseModel):
@@ -18,14 +23,25 @@ class Article(BaseModel):
             return NotImplemented
         return self.price == other.price
 
+    def __float__(self) -> float:
+        return self.price
+
 
 class Idealo:
-    def __init__(self) -> None:
+    def __init__(self, search_terms: str) -> None:
         self.adress = "https://www.idealo.fr"
         self.search_adress = self.adress + "/prechcat.html"
+        self.search_terms = search_terms.lower()
+        self._articles = None
 
-    def get_products(self, search_terms: str) -> list[Article]:
-        uri = self.search_adress + "?q=" + search_terms
+    @property
+    def search_uri(self) -> str:
+        return self.search_adress + "?q=" + self.search_terms
+
+    def get_products(self) -> list[Article]:
+        if self._articles is not None:
+            return self._articles
+        uri = self.search_uri
         session = requests.Session()
         session.headers.update(
             {
@@ -46,10 +62,12 @@ class Idealo:
         soup = BeautifulSoup(r.text, "html.parser")
         articles_html = soup.find_all("div", class_="offerList-item")
         articles: list[Article] = []
+        terms_list = self.search_terms.split()
         for article in articles_html:
             title = article.find(
                 "div", class_="offerList-item-description-title"
             ).text.strip()
+            title_lower = title.lower()
             url = self.adress + article.find("a")["href"]
             price_text = price_pattern.search(
                 article.find("div", class_="offerList-item-priceMin").text
@@ -58,10 +76,19 @@ class Idealo:
                 price = float(re.sub(r"\s", "", price_text.group(0).replace(",", ".")))
             else:
                 raise ValueError("No price found")
-            articles.append(Article(title=title, url=url, price=price))
+            if all([term in title_lower for term in terms_list]):
+                articles.append(Article(title=title, url=url, price=price))
 
         return articles
 
-    def get_min_price_article(self, search_terms: str) -> Article:
-        articles = self.get_products(search_terms)
+    def get_min_price_article(self) -> Article:
+        articles = self.get_products()
+        if len(articles) == 0:
+            raise NoArticleFound(f"No article found for {self.search_terms}")
         return min([article for article in articles])
+
+    def get_mean_price_article(self) -> float:
+        articles = self.get_products()
+        if len(articles) == 0:
+            raise NoArticleFound(f"No article found for {self.search_terms}")
+        return mean([article.price for article in articles])

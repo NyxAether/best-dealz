@@ -12,8 +12,7 @@ class Notifications:
     def __init__(self, search_terms: str, threshold: float) -> None:
         self.search_terms = search_terms
         self.threshold = threshold
-        self.dealz = Idealo()
-        self.dealz = Idealo()
+        self.dealz = Idealo(search_terms)
         self.paths = Paths(Path.cwd())
         self.emailer = SMTP2GO(self.paths.config)
 
@@ -29,7 +28,7 @@ class Notifications:
         while True:
             time.sleep(timer)
             click.echo(f"Checking prices for {self.search_terms}...")
-            best_article = self.dealz.get_min_price_article(self.search_terms)
+            best_article = self.dealz.get_min_price_article()
             click.echo(f"Best price is {best_article.price} €")
             if best_article.price < self.threshold:
                 click.echo(

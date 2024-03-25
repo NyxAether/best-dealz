@@ -1,9 +1,11 @@
-
+from pathlib import Path
 
 import click
 
+from best_dealz.checkmanager import CheckManager
 from best_dealz.idealo import Idealo, NoArticleFound
-from best_dealz.notifications import Notifications
+from best_dealz.paths import Paths
+from best_dealz.smtp2go import SMTP2GO
 
 
 @click.group(help="Find price on idealo")
@@ -31,25 +33,19 @@ def min_price(search_terms: str) -> None:
 @click.command(help="Alert if article is below threshold")
 @click.argument("search_terms")
 @click.argument("threshold", type=float)
-@click.option(
-    "--timer", default=60, help="Timer in seconds to check prices. Defaults to 60"
-)
-@click.option(
-    "--timer-after-email",
-    default=1800,
-    help="Timer in seconds to wait after sending an email. Defaults to 1800",
-)
 def alert_below(
     search_terms: str,
     threshold: float | int,
-    timer: int = 60,
-    timer_after_email: int = 1800,
 ) -> None:
-    Notifications(search_terms, threshold).loop(timer, timer_after_email)
+    paths = Paths(Path.cwd())
+    dealz = Idealo(search_terms)
+    emailer = SMTP2GO(paths.config)
+    checker = CheckManager(dealz, emailer)
+    checker.check_min_price(threshold)
+
 
 main.add_command(min_price)
 main.add_command(alert_below)
 
 if __name__ == "__main__":
     main()
-

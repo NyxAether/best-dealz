@@ -3,37 +3,21 @@ from statistics import mean
 
 import requests
 from bs4 import BeautifulSoup
-from pydantic import BaseModel, Field, HttpUrl
+
+from best_dealz.pricechecker import Article, NoArticleFound, PriceChecker
 
 
-class NoArticleFound(Exception):
-    pass
-
-
-class Article(BaseModel):
-    title: str
-    price: float = Field(ge=0.0)
-    url: HttpUrl
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Article):
-            return NotImplemented
-        return self.url == other.url
-
-    def __float__(self) -> float:
-        return self.price
-
-
-class Idealo:
+class Idealo(PriceChecker):
     def __init__(self, search_terms: str) -> None:
+        super().__init__(search_terms)
         self.adress = "https://www.idealo.fr"
-        self.search_adress = self.adress + "/prechcat.html"
-        self.search_terms = search_terms.lower()
+        self._search_adress = self.adress + "/prechcat.html"
+        self._search_terms = search_terms.lower()
         self._articles = None
 
     @property
     def search_uri(self) -> str:
-        return self.search_adress + "?q=" + self.search_terms
+        return self._search_adress + "?q=" + self._search_terms
 
     def get_products(self) -> list[Article]:
         if self._articles is not None:
@@ -59,13 +43,13 @@ class Idealo:
         soup = BeautifulSoup(r.text, "html.parser")
         articles_html = soup.find_all("div", class_=r"sr-resultList__item")
         articles: list[Article] = []
-        terms_list = self.search_terms.split()
+        terms_list = self._search_terms.split()
         for article in articles_html:
             title = article.find("div", class_=r"sr-productSummary__title").text.strip()
             title_lower = title.lower()
             if article.find("a") is None:
                 continue
-            url = self.adress + article.find("a")["href"]
+            url = article.find("a")["href"]
             price_text = price_pattern.search(
                 article.find("div", class_="sr-detailedPriceInfo__price").text
             )
@@ -81,15 +65,11 @@ class Idealo:
     def get_min_price_article(self) -> Article:
         articles = self.get_products()
         if len(articles) == 0:
-            raise NoArticleFound(f"No article found for {self.search_terms}")
+            raise NoArticleFound(f"No article found for {self._search_terms}")
         return min(articles, key=lambda article: article.price)
 
     def get_mean_price_article(self) -> float:
         articles = self.get_products()
         if len(articles) == 0:
-            raise NoArticleFound(f"No article found for {self.search_terms}")
+            raise NoArticleFound(f"No article found for {self._search_terms}")
         return mean([article.price for article in articles])
-
-    def reset(self) -> None:
-        """Reset articles to None, so the next call to get_products will fetch data"""
-        self._articles = None

@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -19,7 +20,15 @@ class Email(BaseModel):
 
 class SMTP2GO:
     def __init__(self, config_path: Path) -> None:
-        self._config = EmailConfig(**yaml.safe_load(config_path.read_text()))
+        if config_path.exists():
+            self._config = EmailConfig(**yaml.safe_load(config_path.read_text()))
+        else:
+            # Read environment variables
+            self._config = EmailConfig(
+                sender=os.environ["SMTP2GO_SENDER"],
+                to=os.environ["SMTP2GO_TO"].split(","),
+                api_key=os.environ["SMTP2GO_API_KEY"],
+            )
         self._api_url = "https://api.smtp2go.com/v3/email/send"
 
     def send_email(self, email: Email) -> None:

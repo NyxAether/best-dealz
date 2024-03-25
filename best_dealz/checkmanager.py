@@ -24,5 +24,13 @@ class CheckManager:
                     f"Search url : {self._price_checker.search_uri}"
                 )
                 self._mailer.send_email(Email(subject=subject, text_body=body))
+                print(
+                    f"Email sent\n"
+                    f"Best price for {search_tems} is {min_price_article.price} €"
+                )
         except NoArticleFound:
-            print("No article found", file=sys.stderr)
+            print(
+                f"No article found.\n"
+                f"Search terms : {self._price_checker.search_terms}",
+                file=sys.stderr,
+            )

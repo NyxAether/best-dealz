@@ -32,16 +32,32 @@ def min_price(search_terms: str) -> None:
 
 @click.command(help="Alert if article is below threshold")
 @click.argument("search_terms")
-@click.argument("threshold", type=float)
+@click.argument("threshold")
 def alert_below(
     search_terms: str,
-    threshold: float | int,
+    threshold: str,
 ) -> None:
+    """Alert if article is below threshold
+
+    Args:
+        search_terms (str): Search terms use for the deal search.
+            Can be multiple searches if separated by comma
+        threshold (float | int): Threshold below which an email is sent.
+            Can be multiple thresholds if separated by comma
+    """
+    if "," in str(search_terms):
+        search_terms_list = search_terms.split(",")
+        threshold_list = threshold.split(",")
+    else:
+        search_terms_list = [search_terms]
+        threshold_list = [threshold]
+
     paths = Paths(Path.cwd())
-    dealz = Idealo(search_terms)
     emailer = SMTP2GO(paths.config)
-    checker = CheckManager(dealz, emailer)
-    checker.check_min_price(threshold)
+    for search_term, thresh in zip(search_terms_list, threshold_list):
+        dealz = Idealo(search_term)
+        checker = CheckManager(dealz, emailer)
+        checker.check_min_price(float(thresh))
 
 
 main.add_command(min_price)

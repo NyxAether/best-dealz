@@ -49,16 +49,18 @@ class Denicheur(PriceChecker):
         for article in articles_html:
             title = article.find(attrs={"data-test": "ProductName"}).text.strip()
             title_lower = title.lower()
-            card_link = article.find("a",attrs={"data-test": "InternalLink"})
+            card_link = article.find("a", attrs={"data-test": "InternalLink"})
             if card_link is None:
                 continue
             url = self.adress + card_link["href"]
-            price_element= card_link.select("div > div > div > div > span")
+            price_element = card_link.select("div > div > div > div > span")
             if len(price_element) == 0:
                 continue
             price_match = price_pattern.search(
                 # normalize is used to remove unicode space \xa0
-                normalize("NFKD", card_link.select("div > div > div > div > span")[-1].text)
+                normalize(
+                    "NFKD", card_link.select("div > div > div > div > span")[-1].text
+                )
             )
             if price_match:
                 price = float(price_match.group(0).replace(",", ".").replace(" ", ""))
@@ -68,4 +70,3 @@ class Denicheur(PriceChecker):
                 articles.append(Article(title=title, price=price, url=url))
         self._articles = articles
         return articles
-

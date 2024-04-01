@@ -30,7 +30,8 @@ class CheckManager:
                 )
         except NoArticleFound:
             print(
-                f"Checker {self._price_checker.__class__.__name__} did not find an article.\n"
+                f"Checker {self._price_checker.__class__.__name__} "
+                "did not find an article.\n"
                 f"No article found.\n"
                 f"Search terms : {self._price_checker.search_terms}",
                 file=sys.stderr,

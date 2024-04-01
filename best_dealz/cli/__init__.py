@@ -8,7 +8,6 @@ from best_dealz.checker.pricechecker import NoArticleFound, PriceChecker
 from best_dealz.checkmanager import CheckManager
 from best_dealz.paths import Paths
 from best_dealz.smtp2go import SMTP2GO
-from tests.test_denicheur import denicheur
 
 
 @click.group(help="Find price on idealo")
@@ -22,9 +21,9 @@ def min_price(search_terms: str) -> None:
     try:
         dealz = Idealo(search_terms)
         print_min_price(dealz)
-        denicheur =Denicheur(search_terms)
+        denicheur = Denicheur(search_terms)
         print_min_price(denicheur)
-        
+
     except NoArticleFound as e:
         click.echo(e)
 
@@ -68,7 +67,8 @@ def alert_below(
 main.add_command(min_price)
 main.add_command(alert_below)
 
-def print_min_price(checker: PriceChecker):
+
+def print_min_price(checker: PriceChecker) -> None:
     min_price_article = checker.get_min_price_article()
     mean_price = checker.get_mean_price_article()
     print(
@@ -77,6 +77,7 @@ def print_min_price(checker: PriceChecker):
         f"Best article : {min_price_article.url}\n"
         f"Search : {checker.search_uri}"
     )
+
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,6 @@
 import sys
 
-from best_dealz.pricechecker import NoArticleFound, PriceChecker
+from best_dealz.checker.pricechecker import NoArticleFound, PriceChecker
 from best_dealz.smtp2go import SMTP2GO, Email
 
 

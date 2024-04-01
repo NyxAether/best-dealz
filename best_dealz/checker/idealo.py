@@ -1,10 +1,9 @@
 import re
-from statistics import mean
 
 import requests
 from bs4 import BeautifulSoup
 
-from best_dealz.pricechecker import Article, NoArticleFound, PriceChecker
+from best_dealz.checker.pricechecker import Article, PriceChecker
 
 
 class Idealo(PriceChecker):
@@ -59,17 +58,5 @@ class Idealo(PriceChecker):
                 raise ValueError("No price found")
             if all([term in title_lower for term in terms_list]):
                 articles.append(Article(title=title, url=url, price=price))
-
+        self._articles = articles
         return articles
-
-    def get_min_price_article(self) -> Article:
-        articles = self.get_products()
-        if len(articles) == 0:
-            raise NoArticleFound(f"No article found for {self._search_terms}")
-        return min(articles, key=lambda article: article.price)
-
-    def get_mean_price_article(self) -> float:
-        articles = self.get_products()
-        if len(articles) == 0:
-            raise NoArticleFound(f"No article found for {self._search_terms}")
-        return mean([article.price for article in articles])

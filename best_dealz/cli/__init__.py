@@ -2,10 +2,13 @@ from pathlib import Path
 
 import click
 
+from best_dealz.checker.denicheur import Denicheur
+from best_dealz.checker.idealo import Idealo
+from best_dealz.checker.pricechecker import NoArticleFound, PriceChecker
 from best_dealz.checkmanager import CheckManager
-from best_dealz.idealo import Idealo, NoArticleFound
 from best_dealz.paths import Paths
 from best_dealz.smtp2go import SMTP2GO
+from tests.test_denicheur import denicheur
 
 
 @click.group(help="Find price on idealo")
@@ -18,14 +21,10 @@ def main() -> None:
 def min_price(search_terms: str) -> None:
     try:
         dealz = Idealo(search_terms)
-        best_article = dealz.get_min_price_article()
-        avg_price = dealz.get_mean_price_article()
-        click.echo(
-            f"Average price for {search_terms} is {avg_price:.2f} € :\n"
-            f"Best price for {search_terms} is {best_article.price} € :\n"
-            f"Best article : {best_article.url}\n"
-            f"Search : {dealz.search_uri}"
-        )
+        print_min_price(dealz)
+        denicheur =Denicheur(search_terms)
+        print_min_price(denicheur)
+        
     except NoArticleFound as e:
         click.echo(e)
 
@@ -58,10 +57,23 @@ def alert_below(
         dealz = Idealo(search_term)
         checker = CheckManager(dealz, emailer)
         checker.check_min_price(float(thresh))
+        denicheur = Denicheur(search_term)
+        checker = CheckManager(denicheur, emailer)
+        checker.check_min_price(float(thresh))
 
 
 main.add_command(min_price)
 main.add_command(alert_below)
+
+def print_min_price(checker: PriceChecker):
+    min_price_article = checker.get_min_price_article()
+    mean_price = checker.get_mean_price_article()
+    print(
+        f"Average price for {checker.search_terms} is {mean_price:.2f} € :\n"
+        f"Best price for {checker.search_terms} is {min_price_article.price} € :\n"
+        f"Best article : {min_price_article.url}\n"
+        f"Search : {checker.search_uri}"
+    )
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from statistics import mean
 
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -39,13 +40,17 @@ class PriceChecker(ABC):
     def get_products(self) -> list[Article]:
         pass
 
-    @abstractmethod
     def get_min_price_article(self) -> Article:
-        pass
+        articles = self.get_products()
+        if len(articles) == 0:
+            raise NoArticleFound(f"No article found for {self._search_terms}")
+        return min(articles, key=lambda article: article.price)
 
-    @abstractmethod
     def get_mean_price_article(self) -> float:
-        pass
+        articles = self.get_products()
+        if len(articles) == 0:
+            raise NoArticleFound(f"No article found for {self._search_terms}")
+        return mean([article.price for article in articles])
 
     def reset(self) -> None:
         """Reset articles to None, so the next call to get_products will fetch data"""

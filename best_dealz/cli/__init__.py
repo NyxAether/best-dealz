@@ -54,12 +54,15 @@ def alert_below(
     paths = Paths(Path.cwd())
     emailer = SMTP2GO(paths.config)
     for search_term, thresh in zip(search_terms_list, threshold_list):
-        dealz = Idealo(search_term)
-        checker = CheckManager(dealz, emailer)
-        checker.check_min_price(float(thresh))
-        denicheur = Denicheur(search_term)
-        checker = CheckManager(denicheur, emailer)
-        checker.check_min_price(float(thresh))
+        try:
+            dealz = Idealo(search_term)
+            checker = CheckManager(dealz, emailer)
+            checker.check_min_price(float(thresh))
+            denicheur = Denicheur(search_term)
+            checker = CheckManager(denicheur, emailer)
+            checker.check_min_price(float(thresh))
+        except ValueError as e:
+            click.echo(e)
 
 
 main.add_command(min_price)

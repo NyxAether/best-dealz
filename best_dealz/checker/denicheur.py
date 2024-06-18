@@ -36,6 +36,16 @@ class Denicheur(PriceChecker):
                 ),
                 "Accept-Language": "fr-FR,en-US;q=0.7,en;q=0.3",
                 "Accept-Encoding": "gzip, deflate, br",
+                "DNT": "1",
+                "Connection": "keep-alive",
+                "Upgrade-Insecure-Requests": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "cross-site",
+                "Sec-GPC": "1",
+                "Priority": "u=1",
+                "Pragma": "no-cache",
+                "Cache-Control": "no-cache",
             }
         )
         r = session.get(uri, timeout=10)

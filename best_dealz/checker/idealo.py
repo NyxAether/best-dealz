@@ -42,17 +42,25 @@ class Idealo(PriceChecker):
         if r.status_code != 200:
             raise ValueError(f"Error while getting products: {r.status_code}")
         soup = BeautifulSoup(r.text, "html.parser")
-        articles_html = soup.find_all("div", class_=r"sr-resultList__item")
+        # articles_html = soup.find_all("div", {"data-testid":"product-tile"})
+        # articles_html = soup.find_all("div", class_=r"sr-resultList__item")
+        articles_html = soup.find_all(
+            "div", attrs={"class": re.compile("sr-resultList__item")}
+        )
         articles: list[Article] = []
         terms_list = self._search_terms.split()
         for article in articles_html:
-            title = article.find("div", class_=r"sr-productSummary__title").text.strip()
+            title = article.find(
+                "div", attrs={"class": re.compile(r"sr-productSummary__title")}
+            ).text.strip()
             title_lower = title.lower()
             if article.find("a") is None:
                 continue
             url = article.find("a")["href"]
             price_text = price_pattern.search(
-                article.find("div", class_="sr-detailedPriceInfo__price").text
+                article.find(
+                    "div", attrs={"class": re.compile(r"detailedPriceInfo__price")}
+                ).text
             )
             if price_text:
                 price = float(re.sub(r"\s", "", price_text.group(0).replace(",", ".")))

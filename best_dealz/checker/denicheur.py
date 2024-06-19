@@ -50,7 +50,9 @@ class Denicheur(PriceChecker):
         )
         r = session.get(uri, timeout=10)
         if r.status_code != 200:
-            raise ValueError(f"Error while getting products: {r.status_code}")
+            raise ValueError(f"Error while getting products: {r.status_code}"
+                             f"\nUri tested is {uri}"
+                             f'\nResponse: {r.text}')
         soup = BeautifulSoup(r.text, "html.parser")
         articles_html = soup.find_all(attrs={"data-test": "ProductGridCard"})
         articles: list[Article] = []

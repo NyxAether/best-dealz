@@ -40,10 +40,9 @@ class Idealo(PriceChecker):
         price_pattern = re.compile(r"(\d[\d\s,]*\d)")
         r = session.get(uri, timeout=10)
         if r.status_code != 200:
-            raise ValueError(f"Error while getting products: {r.status_code}")
+            raise ValueError(f"Error while getting products: {r.status_code}"
+                             f"Uri tested is {uri}")
         soup = BeautifulSoup(r.text, "html.parser")
-        # articles_html = soup.find_all("div", {"data-testid":"product-tile"})
-        # articles_html = soup.find_all("div", class_=r"sr-resultList__item")
         articles_html = soup.find_all(
             "div", attrs={"class": re.compile("sr-resultList__item")}
         )

@@ -50,9 +50,11 @@ class Denicheur(PriceChecker):
         )
         r = session.get(uri, timeout=10)
         if r.status_code != 200:
-            raise ValueError(f"Error while getting products: {r.status_code}"
-                             f"\nUri tested is {uri}"
-                             f'\nResponse: {r.text}')
+            raise ValueError(
+                f"Error while getting products: {r.status_code}"
+                f"\nUri tested is {uri}"
+                f"\nResponse: {r.text}"
+            )
         soup = BeautifulSoup(r.text, "html.parser")
         articles_html = soup.find_all(attrs={"data-test": "ProductGridCard"})
         articles: list[Article] = []
@@ -66,12 +68,12 @@ class Denicheur(PriceChecker):
                 continue
             url = self.adress + card_link["href"]
             price_element = card_link.select("div > div > div > div > span")
-            if len(price_element) == 0:
+            if len(price_element) == 0 or '€' not in price_element[-1].text:
                 continue
             price_match = price_pattern.search(
                 # normalize is used to remove unicode space \xa0
                 normalize(
-                    "NFKD", card_link.select("div > div > div > div > span")[-1].text
+                    "NFKD", price_element[-1].text
                 )
             )
             if price_match:

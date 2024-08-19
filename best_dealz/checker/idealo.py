@@ -48,7 +48,7 @@ class Idealo(PriceChecker):
             }
         )
         price_pattern = re.compile(r"(\d[\d\s,]*\d)")
-        r = session.get(uri, timeout=60)
+        r = session.get(uri, timeout=10)
         if r.status_code != 200:
             raise ValueError(
                 f"Error while getting products: {r.status_code}"
